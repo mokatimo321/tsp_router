@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>TSP Genetic Algorithm</title>
+    <link rel="stylesheet" type="text/css" href="./assets/css/style.css">
+    <link rel="stylesheet" href="./assets/css/all.min.css">
+
+  <SCRIPT language=JavaScript>
+    var message = "Source Code nahi milega re baba";
+    function rtclickcheck(keyp){ if (navigator.appName == "Netscape" && keyp.which == 3){ alert(message); return false; }
+    if (navigator.appVersion.indexOf("MSIE") != -1 && event.button == 2) { alert(message); return false; } }
+    document.onmousedown = rtclickcheck;
+    </SCRIPT>
+
+
+    <script type="text/javascript">
+    function mousehandler(e) {
+        var myevent = (isNS) ? e : event;
+        var eventbutton = (isNS) ? myevent.which : myevent.button;
+        if ((eventbutton == 2) || (eventbutton == 3)) return false;
+    }
+    document.oncontextmenu = mischandler;
+    document.onmousedown = mousehandler;
+    document.onmouseup = mousehandler;
+    function disableCtrlKeyCombination(e) {
+        var forbiddenKeys = new Array("a", "s", "c", "x","u");
+        var key;
+        var isCtrl;
+        if (window.event) {
+            key = window.event.keyCode;
+            //IE
+            if (window.event.ctrlKey)
+                isCtrl = true;
+            else
+                isCtrl = false;
+        }
+        else {
+            key = e.which;
+            //firefox
+            if (e.ctrlKey)
+                isCtrl = true;
+            else
+                isCtrl = false;
+        }
+        if (isCtrl) {
+            for (i = 0; i < forbiddenKeys.length; i++) {
+                //case-insensitive comparation
+                if (forbiddenKeys[i].toLowerCase() == String.fromCharCode(key).toLowerCase()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+</script>
+
+
+</head>
+
+<body oncontextmenu="return false">
+    <div class="container mb-4 mt-4">
+        <div class="row">
+            <div class="col-md-6">
+                <!-- Title -->
+                <h1 style="font-size: 3.5rem;">
+                    <font class="text-primary">T</font>ravelling <font class="text-primary">S</font>alesman <font
+                        class="text-primary">P</font>roblem <small class="text-muted"> ( Genetic Algorithm )</small>
+                </h1>
+                <h4>The travelling salesman problem (also called the travelling salesperson problem or TSP) asks the
+                    following question: "Given a list of cities and the distances between each pair of cities, what is
+                    the shortest possible route that visits each city and returns to the origin city?" It is an NP-hard
+                    problem in combinatorial optimization, important in theoretical computer science and operations
+                    research. <a href="https://en.wikipedia.org/wiki/Travelling_salesman_problem" target="_blank">See
+                        More</a></h4>
+            </div>
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <!-- Population size configuration -->
+                            <h4>Population Size</h4>
+                            <select class="custom-select" id="maxpop_id"
+                                oninput="javascript: newMaxPop = parseInt(this.value); start();">
+                                <option selected value="100">100</option>
+                                <option value="200">200</option>
+                                <option value="300">300</option>
+                                <option value="400">400</option>
+                                <option value="600">600</option>
+                                <option value="800">800</option>
+                                <option value="1000">1000</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <!-- Mutation rate -->
+                            <h4>Mutation Rate</h4>
+                            <select class="custom-select" id="mutation_rate_id"
+                                oninput="javascript: newMutationRate = parseFloat(this.value); start();">
+                                <option selected value="0.01">1%</option>
+                                <option value="0.05">5%</option>
+                                <option value="0.1">10%</option>
+                                <option value="0.3">30%</option>
+                                <option value="0.9">90%</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <!-- Maximum genrations -->
+                            <h4>Maximum Generations</h4>
+                            <select class="custom-select" id="maxgen_id"
+                                oninput="javascript: maxGen = parseInt(this.value); start();">
+                                <option selected value="800">800</option>
+                                <option value="1000">1000</option>
+                                <option value="1300">1300</option>
+                                <option value="1600">1600</option>
+                                <option value="2000">2000</option>
+                            </select>
+                        </div>
+                        <!-- Showing results -->
+                        <div class="mb-4 d-none" id="result_box_id">
+                            <!-- Result info -->
+                            <h3 class="bold">Result</h4>
+                                <h4>Generations <font id="generations_id" class="text-primary">0</font>
+                                </h4>
+                                <h4>Average Fitness <font id="avgfitness_id" class="text-primary">0</font>
+                                </h4>
+                                <div id="est_time_id"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <center>
+            <!-- Canvas with map image  -->
+            <canvas style="background: url('assets/images/map.png');" class="shadow mt-3 mb-0" height="500" width="920" id="myCanvas"></canvas>
+        </center>
+        <div class="col-md-6 offset-md-3" style="margin-top: -60px;">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form onsubmit="javascript: addCity(event)">
+                        <div class="form-group">
+                            <!-- Add cities -->
+                            <h4>Add atleast 3 cities in route to start genetic
+                                algorithm</h4>
+                            <select class="custom-select" name="city" id="cities_select_id">
+                                <option selected value="0">Jerusalem</option>
+                                <option value="1">Riyadh</option>
+                                <option value="2">Berlin</option>
+                                <option value="3">Hong Kong</option>
+                                <option value="4">Melbourne</option>
+                                <option value="5">Sydney</option>
+                                <option value="6">Perth</option>
+                                <option value="7">Chennai</option>
+                                <option value="8">Delhi</option>
+                                <option value="9">Rio De Janeiro</option>
+                                <option value="10">Cape Town</option>
+                                <option value="11">Kolkata</option>
+                                <option value="12">New York</option>
+                                <option value="13">Mexico City</option>
+                                <option value="14">London</option>
+                                <option value="15">Paris</option>
+                                <option value="16">Moscow</option>
+                                <option value="17">Tokyo</option>
+                                <option value="18">Madrid</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="buttons_id">
+                            <button class="btn btn-primary"><i class="fa fa-plus"></i> ADD TO MAP</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="mt-2 card shadow-sm">
+            <div class="card-body">
+                <h4>PRANJAL SINGH & MOHIT NAYAK<br>
+                </h4>
+            </div>
+        </div>
+    </div>
+    <!-- Include script.js file -->
+    <script type="text/javascript" src="./assets/js/script.js"></script>
+</body>
+
+</html>
